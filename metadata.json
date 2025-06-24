@@ -1,0 +1,6 @@
+{
+  "name": "Invoicr",
+  "description": "A stylish invoicing and time tracking tool for freelancers. Track time, create manual invoices, calculate bills, export to PDF, and manage data locally with a dark/light mode theme.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

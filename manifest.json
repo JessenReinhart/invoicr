@@ -1,0 +1,26 @@
+
+{
+  "short_name": "Invoicr",
+  "name": "Invoicr - Invoicing & Time Tracking",
+  "description": "A stylish invoicing and time tracking tool for freelancers. Track time, create manual invoices, calculate bills, export to PDF, and manage data locally with a dark/light mode theme.",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#8b5cf6",
+  "scope": "/",
+  "orientation": "any"
+}
