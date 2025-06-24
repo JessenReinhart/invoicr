@@ -17,13 +17,14 @@ import ChevronLeftIcon from './components/icons/ChevronLeftIcon';
 import TrashIcon from './components/icons/TrashIcon';
 import { SUPPORTED_CURRENCIES } from './constants';
 import DownloadIcon from './components/icons/DownloadIcon'; // For export button
-import UploadIcon from './components/icons/UploadIcon'; 
-
+import UploadIcon from './components/icons/UploadIcon';
+import logo from './components/icons/logo.png';
+import logoDark from './components/icons/logo_dark.png';
 
 const AppContent: React.FC = () => {
-  const { 
-    invoices, deleteInvoice, 
-    settings, updateSettings, 
+  const {
+    invoices, deleteInvoice,
+    settings, updateSettings,
     timer, startTimer, stopTimer, resetTimer,
     activeView, setActiveView,
     addToast, resetAllData,
@@ -80,7 +81,7 @@ const AppContent: React.FC = () => {
             ${invoice.clientName ? `<p style="margin: 0;">Client: ${invoice.clientName}</p>` : ''}
           </div>
           <div style="text-align: right;">
-            <p style="margin:0;">Invoice ID: ${invoice.id.substring(0,8)}</p>
+            <p style="margin:0;">Invoice ID: ${invoice.id.substring(0, 8)}</p>
             <p style="margin:0;">Date: ${new Date(invoice.dateCreated).toLocaleDateString()}</p>
           </div>
         </div>
@@ -111,11 +112,11 @@ const AppContent: React.FC = () => {
         </div>
       </div>
     `;
-    
+
     if (window.html2pdf) {
       window.html2pdf().from(invoiceHTML).set({
-        margin: [15, 10, 15, 10], 
-        filename: `Invoice-${invoice.projectName.replace(/\s+/g, '_')}-${invoice.id.substring(0,8)}.pdf`,
+        margin: [15, 10, 15, 10],
+        filename: `Invoice-${invoice.projectName.replace(/\s+/g, '_')}-${invoice.id.substring(0, 8)}.pdf`,
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         html2canvas: { scale: 2, useCORS: true },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -150,9 +151,9 @@ const AppContent: React.FC = () => {
             </GradientButton>
           </div>
           {timer.elapsedSeconds > 0 && !timer.isActive && (
-             <p className="text-center mt-4 text-xs text-slate-500 dark:text-slate-400">
-               Total tracked: {formatTime(timer.elapsedSeconds)}. Use this time in a new invoice.
-             </p>
+            <p className="text-center mt-4 text-xs text-slate-500 dark:text-slate-400">
+              Total tracked: {formatTime(timer.elapsedSeconds)}. Use this time in a new invoice.
+            </p>
           )}
         </div>
       </div>
@@ -174,12 +175,12 @@ const AppContent: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {invoices.sort((a,b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()).map(invoice => (
-              <InvoiceCard 
-                key={invoice.id} 
-                invoice={invoice} 
-                onEdit={openModalForEdit} 
-                onDelete={deleteInvoice} 
+            {invoices.sort((a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()).map(invoice => (
+              <InvoiceCard
+                key={invoice.id}
+                invoice={invoice}
+                onEdit={openModalForEdit}
+                onDelete={deleteInvoice}
                 onExport={handleExportPDF}
               />
             ))}
@@ -197,10 +198,10 @@ const AppContent: React.FC = () => {
 
 
     useEffect(() => {
-        setCurrentRate(settings.defaultRate);
-        setCurrentCurrency(settings.currency);
-        setCurrentUserName(settings.userName || '');
-        setCurrentUserBankAccount(settings.userBankAccount || '');
+      setCurrentRate(settings.defaultRate);
+      setCurrentCurrency(settings.currency);
+      setCurrentUserName(settings.userName || '');
+      setCurrentUserBankAccount(settings.userBankAccount || '');
     }, [settings]);
 
 
@@ -211,46 +212,46 @@ const AppContent: React.FC = () => {
 
 
     const handleSaveSettings = () => {
-      updateSettings({ 
-        defaultRate: currentRate, 
+      updateSettings({
+        defaultRate: currentRate,
         currency: currentCurrency,
         userName: currentUserName,
         userBankAccount: currentUserBankAccount
       });
     };
-    
+
     const handleResetData = () => {
-        if(window.confirm("Are you sure you want to reset all data? This cannot be undone.")) {
-            resetAllData();
-        }
+      if (window.confirm("Are you sure you want to reset all data? This cannot be undone.")) {
+        resetAllData();
+      }
     }
 
     const handleExportData = () => {
-        exportAppData();
+      exportAppData();
     }
 
     const triggerImportInput = () => {
-        fileInputRef.current?.click();
+      fileInputRef.current?.click();
     }
 
     const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result as string;
-                if (content) {
-                    importAppData(content);
-                } else {
-                    addToast('Could not read file content.', 'error');
-                }
-            };
-            reader.onerror = () => {
-                addToast('Error reading file.', 'error');
-            }
-            reader.readAsText(file);
-            event.target.value = ''; // Reset file input
+      const file = event.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          if (content) {
+            importAppData(content);
+          } else {
+            addToast('Could not read file content.', 'error');
+          }
+        };
+        reader.onerror = () => {
+          addToast('Error reading file.', 'error');
         }
+        reader.readAsText(file);
+        event.target.value = ''; // Reset file input
+      }
     }
 
     const commonInputClasses = "mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 sm:text-sm placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-slate-100";
@@ -259,100 +260,100 @@ const AppContent: React.FC = () => {
 
     return (
       <div className="max-w-2xl mx-auto space-y-8">
-         <div className="flex items-center mb-6">
-            <button 
-              onClick={() => setActiveView('dashboard')} 
-              className="p-1.5 mr-2 rounded-md text-purple-600 dark:text-purple-400 hover:bg-slate-200 dark:hover:bg-slate-700/60 transition-colors"
-              aria-label="Back to dashboard"
-            >
-                <ChevronLeftIcon className="w-6 h-6"/>
-            </button>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-50">Settings</h2>
+        <div className="flex items-center mb-6">
+          <button
+            onClick={() => setActiveView('dashboard')}
+            className="p-1.5 mr-2 rounded-md text-purple-600 dark:text-purple-400 hover:bg-slate-200 dark:hover:bg-slate-700/60 transition-colors"
+            aria-label="Back to dashboard"
+          >
+            <ChevronLeftIcon className="w-6 h-6" />
+          </button>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-50">Settings</h2>
         </div>
 
         <div className="rainbow-border-card shadow-glow-blue-purple dark:shadow-dark-glow-blue-purple">
-            <div className="rainbow-border-card-inner bg-slate-50 dark:bg-slate-900 p-6 space-y-5">
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-100 mb-1">General Settings</h3>
-                <div>
-                    <label htmlFor="defaultRate" className={labelClasses}>Default Hourly Rate ({currencySymbol})</label>
-                    <input 
-                        type="number" 
-                        id="defaultRate" 
-                        value={currentRate} 
-                        onChange={handleRateChange} 
-                        min="0" 
-                        step="0.01"
-                        className={commonInputClasses}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="currency" className={labelClasses}>Currency</label>
-                    <select 
-                        id="currency" 
-                        value={currentCurrency} 
-                        onChange={handleCurrencyChange}
-                        className={commonInputClasses}
-                    >
-                        {SUPPORTED_CURRENCIES.map(curr => (
-                            <option key={curr.code} value={curr.code}>
-                                {curr.name} ({curr.symbol})
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="userName" className={labelClasses}>Your Name (for Invoices)</label>
-                    <input 
-                        type="text" 
-                        id="userName" 
-                        value={currentUserName} 
-                        onChange={handleUserNameChange} 
-                        className={commonInputClasses}
-                        placeholder="e.g., John Doe"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="userBankAccount" className={labelClasses}>Your Bank Account Details (for Invoices)</label>
-                    <textarea 
-                        id="userBankAccount" 
-                        value={currentUserBankAccount} 
-                        onChange={handleUserBankAccountChange} 
-                        rows={3}
-                        className={commonInputClasses}
-                        placeholder="e.g., Bank Name, Account Number, SWIFT/BIC"
-                    />
-                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">This information will be displayed on your PDF invoices.</p>
-                </div>
-                <GradientButton onClick={handleSaveSettings} className="w-full sm:w-auto text-sm">Save General Settings</GradientButton>
+          <div className="rainbow-border-card-inner bg-slate-50 dark:bg-slate-900 p-6 space-y-5">
+            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-100 mb-1">General Settings</h3>
+            <div>
+              <label htmlFor="defaultRate" className={labelClasses}>Default Hourly Rate ({currencySymbol})</label>
+              <input
+                type="number"
+                id="defaultRate"
+                value={currentRate}
+                onChange={handleRateChange}
+                min="0"
+                step="0.01"
+                className={commonInputClasses}
+              />
             </div>
-        </div>
-        
-        <div className="rainbow-border-card">
-             <div className="rainbow-border-card-inner bg-slate-50 dark:bg-slate-900 p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-100">Data Management</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Backup your data or import from a previous backup. Importing data will overwrite existing invoices and settings.</p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <GradientButton onClick={handleExportData} variant="secondary" className="w-full sm:w-auto text-sm">
-                        <DownloadIcon className="w-4 h-4 mr-1.5" /> Export All Data
-                    </GradientButton>
-                    <GradientButton onClick={triggerImportInput} variant="secondary" className="w-full sm:w-auto text-sm">
-                       <UploadIcon className="w-4 h-4 mr-1.5" /> Import Data from JSON
-                    </GradientButton>
-                    <input type="file" ref={fileInputRef} onChange={handleImportFile} accept=".json" className="hidden" aria-hidden="true" />
-                </div>
+            <div>
+              <label htmlFor="currency" className={labelClasses}>Currency</label>
+              <select
+                id="currency"
+                value={currentCurrency}
+                onChange={handleCurrencyChange}
+                className={commonInputClasses}
+              >
+                {SUPPORTED_CURRENCIES.map(curr => (
+                  <option key={curr.code} value={curr.code}>
+                    {curr.name} ({curr.symbol})
+                  </option>
+                ))}
+              </select>
             </div>
+            <div>
+              <label htmlFor="userName" className={labelClasses}>Your Name (for Invoices)</label>
+              <input
+                type="text"
+                id="userName"
+                value={currentUserName}
+                onChange={handleUserNameChange}
+                className={commonInputClasses}
+                placeholder="e.g., John Doe"
+              />
+            </div>
+            <div>
+              <label htmlFor="userBankAccount" className={labelClasses}>Your Bank Account Details (for Invoices)</label>
+              <textarea
+                id="userBankAccount"
+                value={currentUserBankAccount}
+                onChange={handleUserBankAccountChange}
+                rows={3}
+                className={commonInputClasses}
+                placeholder="e.g., Bank Name, Account Number, SWIFT/BIC"
+              />
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">This information will be displayed on your PDF invoices.</p>
+            </div>
+            <GradientButton onClick={handleSaveSettings} className="w-full sm:w-auto text-sm">Save General Settings</GradientButton>
+          </div>
         </div>
 
         <div className="rainbow-border-card">
-             <div className="rainbow-border-card-inner bg-slate-50 dark:bg-slate-900 p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Resetting data will permanently delete all your invoices and settings. This action cannot be undone.</p>
-                <GradientButton 
-                    onClick={handleResetData} 
-                    className="w-full sm:w-auto text-sm bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 shadow-red-500/30 hover:shadow-red-600/40">
-                    <TrashIcon className="w-4 h-4 mr-1.5" /> Reset All Data
-                </GradientButton>
+          <div className="rainbow-border-card-inner bg-slate-50 dark:bg-slate-900 p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-100">Data Management</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Backup your data or import from a previous backup. Importing data will overwrite existing invoices and settings.</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <GradientButton onClick={handleExportData} variant="secondary" className="w-full sm:w-auto text-sm">
+                <DownloadIcon className="w-4 h-4 mr-1.5" /> Export All Data
+              </GradientButton>
+              <GradientButton onClick={triggerImportInput} variant="secondary" className="w-full sm:w-auto text-sm">
+                <UploadIcon className="w-4 h-4 mr-1.5" /> Import Data from JSON
+              </GradientButton>
+              <input type="file" ref={fileInputRef} onChange={handleImportFile} accept=".json" className="hidden" aria-hidden="true" />
             </div>
+          </div>
+        </div>
+
+        <div className="rainbow-border-card">
+          <div className="rainbow-border-card-inner bg-slate-50 dark:bg-slate-900 p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Resetting data will permanently delete all your invoices and settings. This action cannot be undone.</p>
+            <GradientButton
+              onClick={handleResetData}
+              className="w-full sm:w-auto text-sm bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 shadow-red-500/30 hover:shadow-red-600/40">
+              <TrashIcon className="w-4 h-4 mr-1.5" /> Reset All Data
+            </GradientButton>
+          </div>
         </div>
       </div>
     );
@@ -364,7 +365,8 @@ const AppContent: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <img src="/icons/logo.png" alt="Invoicr Logo" className="h-8 sm:h-9 w-auto mr-2 sm:mr-3" />
+              <img src={logo} alt="Invoicr Logo" className="h-8 sm:h-9 w-auto mr-2 sm:mr-3 block dark:hidden" />
+              <img src={logoDark} alt="Invoicr Logo" className="h-8 sm:h-9 w-auto mr-2 sm:mr-3 hidden dark:block" />
               <h1 className="text-2xl sm:text-3xl font-bold">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-600 to-blue-500">
                   Invoicr
@@ -372,7 +374,7 @@ const AppContent: React.FC = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <button 
+              <button
                 onClick={() => setActiveView('settings')}
                 className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-700/70 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black transition-colors duration-150"
                 aria-label="Open settings"
@@ -389,8 +391,8 @@ const AppContent: React.FC = () => {
 
       <main className="flex-grow w-full">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-            {activeView === 'dashboard' && <DashboardView />}
-            {activeView === 'settings' && <SettingsView />}
+          {activeView === 'dashboard' && <DashboardView />}
+          {activeView === 'settings' && <SettingsView />}
         </div>
       </main>
 
@@ -398,15 +400,15 @@ const AppContent: React.FC = () => {
         &copy; {new Date().getFullYear()} Invoicr. Track time, get paid. | Made by <a href='https://jessenreinhart.github.io' target='_blank' rel='noopener noreferrer' className='underline hover:text-purple-500 dark:hover:text-purple-400 transition-colors'>Jessen</a>
       </footer>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         title={editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}
         size="lg"
       >
-        <InvoiceForm 
-            onClose={() => setIsModalOpen(false)} 
-            invoiceToEdit={editingInvoice} 
+        <InvoiceForm
+          onClose={() => setIsModalOpen(false)}
+          invoiceToEdit={editingInvoice}
         />
       </Modal>
       <ToastContainer />

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Invoice } from '../types';
-import { formatCurrency, formatTime } from '../utils/formatters';
+import { formatCurrency } from '../utils/formatters';
 import GradientButton from './GradientButton';
 import DownloadIcon from './icons/DownloadIcon';
 import TrashIcon from './icons/TrashIcon';
@@ -26,7 +26,7 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onEdit, onDelete, on
           <h3 className="text-lg sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-600 to-blue-500 mb-1.5">{invoice.projectName}</h3>
           {invoice.clientName && <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Client: {invoice.clientName}</p>}
           <p className="text-xs text-slate-500 dark:text-slate-400">Date: {new Date(invoice.dateCreated).toLocaleDateString()}</p>
-          
+
           <div className="my-3 space-y-0.5">
             <p className="text-sm"><span className="font-medium text-slate-600 dark:text-slate-300">Hours:</span> <span className="text-slate-800 dark:text-slate-100">{invoice.hours.toFixed(2)}</span></p>
             <p className="text-sm"><span className="font-medium text-slate-600 dark:text-slate-300">Rate:</span> <span className="text-slate-800 dark:text-slate-100">{formatCurrency(invoice.rate, settings.currency)}</span></p>
@@ -42,8 +42,8 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onEdit, onDelete, on
           <GradientButton variant="secondary" onClick={() => onExport(invoice)} className="text-xs px-3 py-1.5">
             <DownloadIcon className="w-3.5 h-3.5 mr-1" /> PDF
           </GradientButton>
-          <button 
-            onClick={() => onDelete(invoice.id)} 
+          <button
+            onClick={() => onDelete(invoice.id)}
             className="p-1.5 text-red-500 hover:text-red-600 dark:text-red-500/80 dark:hover:text-red-400 rounded-md hover:bg-red-100/60 dark:hover:bg-red-500/20 transition-colors"
             aria-label="Delete invoice"
           >
