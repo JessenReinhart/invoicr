@@ -36,8 +36,8 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onEdit, onDelete, on
             {invoice.clientName || 'No client specified'}
           </p>
         </div>
-        <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-          Draft
+        <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-400">
+          Saved locally
         </span>
       </div>
 
