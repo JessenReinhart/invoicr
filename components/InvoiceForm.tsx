@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Invoice } from '../types';
 import { useAppContext } from '../store/AppContext';
 import GradientButton from './GradientButton';
-import { formatCurrency as utilFormatCurrency } from '../utils/formatters'; // Renamed to avoid conflict
+import { formatCurrency as utilFormatCurrency } from '../utils/formatters';
 
 interface InvoiceFormProps {
   onClose: () => void;
@@ -47,76 +47,70 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onClose, invoiceToEdit }) => 
       addToast('Please enter valid positive hours.', 'error');
       return;
     }
-    if (isNaN(numericRate) || numericRate < 0) { // Allow 0 rate, but not negative
+    if (isNaN(numericRate) || numericRate < 0) {
       addToast('Please enter a valid rate (0 or positive).', 'error');
       return;
     }
 
-    const invoiceData = {
-      projectName,
-      clientName,
-      hours: numericHours,
-      rate: numericRate,
-      notes,
-    };
+    const invoiceData = { projectName, clientName, hours: numericHours, rate: numericRate, notes };
 
-    if (invoiceToEdit) {
-      updateInvoice({ ...invoiceToEdit, ...invoiceData });
-    } else {
-      addInvoice(invoiceData);
-    }
+    if (invoiceToEdit) updateInvoice({ ...invoiceToEdit, ...invoiceData });
+    else addInvoice(invoiceData);
+
     onClose();
   };
-  
+
   const handleApplyTrackedTime = () => {
     const trackedHours = applyTrackedTimeToInvoice();
-    if (trackedHours > 0) {
-        setHours(trackedHours.toFixed(2));
-    } else {
-        addToast('No tracked time to apply or timer is still active.', 'info');
-    }
+    if (trackedHours > 0) setHours(trackedHours.toFixed(2));
+    else addToast('No tracked time to apply or timer is still active.', 'info');
   };
 
-  const commonInputClasses = "mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 sm:text-sm placeholder-slate-400 dark:placeholder-slate-500 text-slate-900 dark:text-slate-100";
-  const labelClasses = "block text-sm font-medium text-slate-700 dark:text-slate-300";
-  
+  const commonInputClasses = "mt-1.5 block w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm text-slate-950 shadow-inner shadow-slate-950/[0.02] outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-red-400 focus:bg-white focus:ring-4 focus:ring-red-500/10 dark:border-white/10 dark:bg-white/[0.035] dark:text-white dark:placeholder:text-slate-600 dark:hover:border-white/20 dark:focus:border-red-500/60 dark:focus:bg-white/[0.05]";
+  const labelClasses = "block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400";
   const currencySymbol = utilFormatCurrency(0, settings.currency).replace(/[\d\.,\s]/g, '');
-
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label htmlFor="projectName" className={labelClasses}>Project Name</label>
-        <input type="text" id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} required className={commonInputClasses} placeholder="e.g., Website Redesign" />
-      </div>
-      <div>
-        <label htmlFor="clientName" className={labelClasses}>Client Name (Optional)</label>
-        <input type="text" id="clientName" value={clientName} onChange={(e) => setClientName(e.target.value)} className={commonInputClasses} placeholder="e.g., Acme Corp" />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="hours" className={labelClasses}>Hours Worked</label>
-          <input type="number" id="hours" value={hours} onChange={(e) => setHours(e.target.value)} required min="0.01" step="0.01" className={commonInputClasses} placeholder="e.g., 10.5" />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <label htmlFor="projectName" className={labelClasses}>Project</label>
+          <input type="text" id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} required className={commonInputClasses} placeholder="Website redesign" autoFocus />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="clientName" className={labelClasses}>Client</label>
+          <input type="text" id="clientName" value={clientName} onChange={(e) => setClientName(e.target.value)} className={commonInputClasses} placeholder="Acme Corp" />
         </div>
         <div>
-          <label htmlFor="rate" className={labelClasses}>Hourly Rate ({currencySymbol})</label>
-          <input type="number" id="rate" value={rate} onChange={(e) => setRate(e.target.value)} required min="0" step="0.01" className={commonInputClasses} placeholder={`e.g., ${settings.defaultRate}`} />
+          <label htmlFor="hours" className={labelClasses}>Hours worked</label>
+          <input type="number" id="hours" value={hours} onChange={(e) => setHours(e.target.value)} required min="0.01" step="0.01" className={commonInputClasses} placeholder="10.5" />
+        </div>
+        <div>
+          <label htmlFor="rate" className={labelClasses}>Rate ({currencySymbol})</label>
+          <input type="number" id="rate" value={rate} onChange={(e) => setRate(e.target.value)} required min="0" step="0.01" className={commonInputClasses} placeholder={`${settings.defaultRate}`} />
         </div>
       </div>
-       <GradientButton type="button" variant="secondary" onClick={handleApplyTrackedTime} className="w-full text-sm py-2">
-        Use Tracked Time & Reset Timer
-      </GradientButton>
+
+      <button
+        type="button"
+        onClick={handleApplyTrackedTime}
+        className="flex w-full items-center justify-between rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-left transition hover:border-red-300 hover:bg-red-50/60 dark:border-white/15 dark:bg-white/[0.025] dark:hover:border-red-500/30 dark:hover:bg-red-500/[0.06]"
+      >
+        <span>
+          <span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">Use tracked time</span>
+          <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-500">Apply the current timer total and reset it</span>
+        </span>
+        <span className="text-lg text-slate-400">→</span>
+      </button>
+
       <div>
-        <label htmlFor="notes" className={labelClasses}>Notes (Optional)</label>
-        <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={commonInputClasses} placeholder="e.g., Included initial consultation and wireframes." />
+        <label htmlFor="notes" className={labelClasses}>Notes</label>
+        <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className={commonInputClasses} placeholder="Scope, deliverables, payment notes..." />
       </div>
-      <div className="flex justify-end space-x-3 pt-2">
-        <GradientButton type="button" variant="secondary" onClick={onClose} className="px-4 py-2 text-sm">
-          Cancel
-        </GradientButton>
-        <GradientButton type="submit" className="px-4 py-2 text-sm">
-          {invoiceToEdit ? 'Save Changes' : 'Create Invoice'}
-        </GradientButton>
+
+      <div className="flex justify-end gap-2 border-t border-slate-100 pt-4 dark:border-white/10">
+        <GradientButton type="button" variant="secondary" onClick={onClose}>Cancel</GradientButton>
+        <GradientButton type="submit">{invoiceToEdit ? 'Save changes' : 'Create invoice'}</GradientButton>
       </div>
     </form>
   );
