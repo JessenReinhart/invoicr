@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Theme, Invoice, AppSettings, TimerState, ToastMessage, ActiveView, AppDataDump } from '../types';
+import { Theme, Invoice, InvoiceStatus, AppSettings, TimerState, ToastMessage, ActiveView, AppDataDump } from '../types';
 import { LOCAL_STORAGE_KEYS, DEFAULT_HOURLY_RATE, DEFAULT_CURRENCY } from '../constants';
 import { secondsToHours } from '../utils/formatters';
 
@@ -11,6 +10,8 @@ interface AppContextType {
   addInvoice: (invoice: Omit<Invoice, 'id' | 'dateCreated'>) => void;
   updateInvoice: (invoice: Invoice) => void;
   deleteInvoice: (invoiceId: string) => void;
+  duplicateInvoice: (invoiceId: string) => void;
+  setInvoiceStatus: (invoiceId: string, status: InvoiceStatus) => void;
   getInvoiceById: (invoiceId: string) => Invoice | undefined;
   settings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
@@ -18,7 +19,7 @@ interface AppContextType {
   startTimer: () => void;
   stopTimer: () => void;
   resetTimer: () => void;
-  applyTrackedTimeToInvoice: () => number; // Returns hours
+  applyTrackedTimeToInvoice: () => number;
   toasts: ToastMessage[];
   addToast: (message: string, type: ToastMessage['type']) => void;
   activeView: ActiveView;
@@ -30,10 +31,19 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const normalizeInvoice = (invoice: Invoice): Invoice => ({
+  ...invoice,
+  status: invoice.status || 'draft',
+  clientEmail: invoice.clientEmail || '',
+  dueDate: invoice.dueDate || '',
+});
+
+const normalizeInvoices = (items: Invoice[]) => items.map(normalizeInvoice);
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('light');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [settings, setSettings] = useState<AppSettings>({ 
+  const [settings, setSettings] = useState<AppSettings>({
     defaultRate: DEFAULT_HOURLY_RATE,
     currency: DEFAULT_CURRENCY,
     userName: '',
@@ -43,22 +53,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
 
-  // Load initial state from localStorage
   useEffect(() => {
     const storedTheme = localStorage.getItem(LOCAL_STORAGE_KEYS.THEME) as Theme | null;
     if (storedTheme) {
       setTheme(storedTheme);
       document.documentElement.classList.toggle('dark', storedTheme === 'dark');
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
+      const initialTheme: Theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       setTheme(initialTheme);
       document.documentElement.classList.toggle('dark', initialTheme === 'dark');
       localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, initialTheme);
     }
 
     const storedInvoices = localStorage.getItem(LOCAL_STORAGE_KEYS.INVOICES);
-    if (storedInvoices) setInvoices(JSON.parse(storedInvoices));
+    if (storedInvoices) {
+      try {
+        setInvoices(normalizeInvoices(JSON.parse(storedInvoices)));
+      } catch {
+        setInvoices([]);
+      }
+    }
 
     const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEYS.SETTINGS);
     if (storedSettings) {
@@ -70,15 +84,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         userBankAccount: parsedSettings.userBankAccount || '',
       });
     }
-    
+
     const storedElapsedSeconds = localStorage.getItem(LOCAL_STORAGE_KEYS.TIMER);
     if (storedElapsedSeconds) {
       setTimer(prev => ({ ...prev, elapsedSeconds: JSON.parse(storedElapsedSeconds) }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist state to localStorage
   const saveData = useCallback(<T,>(key: string, data: T) => {
     localStorage.setItem(key, JSON.stringify(data));
   }, []);
@@ -88,12 +100,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => { saveData(LOCAL_STORAGE_KEYS.SETTINGS, settings); }, [settings, saveData]);
   useEffect(() => { saveData(LOCAL_STORAGE_KEYS.TIMER, timer.elapsedSeconds); }, [timer.elapsedSeconds, saveData]);
 
-
   const toggleTheme = useCallback(() => {
     setTheme(prevTheme => {
-      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
-      document.documentElement.classList.toggle('dark', newTheme === 'dark');
-      return newTheme;
+      const nextTheme: Theme = prevTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.classList.toggle('dark', nextTheme === 'dark');
+      return nextTheme;
     });
   }, []);
 
@@ -101,33 +112,54 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const id = crypto.randomUUID();
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
-      setToasts(currToasts => currToasts.filter(toast => toast.id !== id));
+      setToasts(curr => curr.filter(toast => toast.id !== id));
     }, 4000);
   }, []);
 
   const addInvoice = useCallback((invoiceData: Omit<Invoice, 'id' | 'dateCreated'>) => {
-    const newInvoice: Invoice = {
+    const newInvoice: Invoice = normalizeInvoice({
       ...invoiceData,
+      status: invoiceData.status || 'draft',
       id: crypto.randomUUID(),
       dateCreated: new Date().toISOString(),
-    };
-    setInvoices(prev => [...prev, newInvoice]);
-    addToast('Invoice created successfully!', 'success');
+    });
+    setInvoices(prev => [newInvoice, ...prev]);
+    addToast('Invoice created.', 'success');
   }, [addToast]);
 
   const updateInvoice = useCallback((updatedInvoice: Invoice) => {
-    setInvoices(prev => prev.map(inv => inv.id === updatedInvoice.id ? updatedInvoice : inv));
-    addToast('Invoice updated successfully!', 'success');
+    setInvoices(prev => prev.map(inv => inv.id === updatedInvoice.id ? normalizeInvoice(updatedInvoice) : inv));
+    addToast('Invoice updated.', 'success');
   }, [addToast]);
-  
-  const getInvoiceById = useCallback((invoiceId: string) => {
-    return invoices.find(inv => inv.id === invoiceId);
-  }, [invoices]);
 
   const deleteInvoice = useCallback((invoiceId: string) => {
     setInvoices(prev => prev.filter(inv => inv.id !== invoiceId));
     addToast('Invoice deleted.', 'info');
   }, [addToast]);
+
+  const duplicateInvoice = useCallback((invoiceId: string) => {
+    const source = invoices.find(inv => inv.id === invoiceId);
+    if (!source) return;
+    const duplicate: Invoice = {
+      ...source,
+      id: crypto.randomUUID(),
+      projectName: `${source.projectName} Copy`,
+      dateCreated: new Date().toISOString(),
+      status: 'draft',
+    };
+    setInvoices(prev => [duplicate, ...prev]);
+    addToast('Invoice duplicated as a draft.', 'success');
+  }, [invoices, addToast]);
+
+  const setInvoiceStatus = useCallback((invoiceId: string, status: InvoiceStatus) => {
+    setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, status } : inv));
+    addToast(
+      status === 'paid' ? 'Invoice marked as paid.' : status === 'sent' ? 'Invoice marked as sent.' : 'Invoice moved to draft.',
+      'success'
+    );
+  }, [addToast]);
+
+  const getInvoiceById = useCallback((invoiceId: string) => invoices.find(inv => inv.id === invoiceId), [invoices]);
 
   const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
@@ -135,12 +167,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [addToast]);
 
   const startTimer = useCallback(() => {
-    setTimer(prev => ({ ...prev, startTime: Date.now(), isActive: true }));
+    setTimer(prev => prev.isActive ? prev : { ...prev, startTime: Date.now(), isActive: true });
   }, []);
 
   const stopTimer = useCallback(() => {
     setTimer(prev => {
-      if (!prev.startTime) return prev; 
+      if (!prev.startTime) return prev;
       const sessionDuration = Math.floor((Date.now() - prev.startTime) / 1000);
       return {
         ...prev,
@@ -155,47 +187,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setTimer({ startTime: null, elapsedSeconds: 0, isActive: false });
     addToast('Timer reset.', 'info');
   }, [addToast]);
-  
+
   const applyTrackedTimeToInvoice = useCallback((): number => {
     const hours = secondsToHours(timer.elapsedSeconds);
-    setTimer(prev => ({ ...prev, elapsedSeconds: 0 })); 
-    addToast(`Applied ${hours.toFixed(2)} hours from timer. Timer reset.`, 'success');
+    setTimer(prev => ({ ...prev, elapsedSeconds: 0 }));
+    if (hours > 0) addToast(`Added ${hours.toFixed(2)} tracked hours.`, 'success');
     return hours;
   }, [timer.elapsedSeconds, addToast]);
-
-  useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval> | undefined;
-    if (timer.isActive && timer.startTime) {
-      // Interval not strictly needed for elapsedSeconds calculation for persistence
-      // but good for live display updates if AppContext directly managed it.
-      // Current live display is handled in AppContent.
-    }
-    return () => clearInterval(intervalId);
-  }, [timer.isActive, timer.startTime]);
 
   const resetAllData = useCallback(() => {
     localStorage.removeItem(LOCAL_STORAGE_KEYS.INVOICES);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.SETTINGS);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.TIMER);
     setInvoices([]);
-    setSettings({ 
-        defaultRate: DEFAULT_HOURLY_RATE, 
-        currency: DEFAULT_CURRENCY,
-        userName: '',
-        userBankAccount: '' 
+    setSettings({
+      defaultRate: DEFAULT_HOURLY_RATE,
+      currency: DEFAULT_CURRENCY,
+      userName: '',
+      userBankAccount: '',
     });
     setTimer({ startTime: null, elapsedSeconds: 0, isActive: false });
-    addToast('All application data has been reset.', 'warning');
     setActiveView('dashboard');
+    addToast('All local app data has been reset.', 'warning');
   }, [addToast]);
 
   const exportAppData = useCallback(() => {
-    const appData: AppDataDump = {
-      invoices,
-      settings,
-    };
-    const jsonString = JSON.stringify(appData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const appData: AppDataDump = { invoices, settings };
+    const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -204,61 +222,51 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    addToast('Application data exported successfully!', 'success');
+    addToast('Backup exported.', 'success');
   }, [invoices, settings, addToast]);
 
   const importAppData = useCallback((jsonData: string) => {
-    if (!window.confirm("Are you sure you want to import data? This will overwrite all current invoices and settings.")) {
-      return;
-    }
+    if (!window.confirm('Import this backup? Current invoices and settings will be replaced.')) return;
     try {
       const parsedData = JSON.parse(jsonData) as AppDataDump;
-      // Basic validation
-      if (typeof parsedData === 'object' && parsedData !== null &&
-          Array.isArray(parsedData.invoices) &&
-          typeof parsedData.settings === 'object' && parsedData.settings !== null &&
-          typeof parsedData.settings.defaultRate === 'number' &&
-          typeof parsedData.settings.currency === 'string') {
-        
-        setInvoices(parsedData.invoices);
-        // Ensure all settings fields are present, defaulting if necessary
-        setSettings({
-            defaultRate: parsedData.settings.defaultRate || DEFAULT_HOURLY_RATE,
-            currency: parsedData.settings.currency || DEFAULT_CURRENCY,
-            userName: parsedData.settings.userName || '',
-            userBankAccount: parsedData.settings.userBankAccount || '',
-        });
-        // Persist immediately (useEffect might be batched)
-        saveData(LOCAL_STORAGE_KEYS.INVOICES, parsedData.invoices);
-        saveData(LOCAL_STORAGE_KEYS.SETTINGS, {
-            defaultRate: parsedData.settings.defaultRate || DEFAULT_HOURLY_RATE,
-            currency: parsedData.settings.currency || DEFAULT_CURRENCY,
-            userName: parsedData.settings.userName || '',
-            userBankAccount: parsedData.settings.userBankAccount || '',
-        });
-
-        addToast('Application data imported successfully!', 'success');
-        setActiveView('dashboard'); // Navigate to dashboard to see changes
-      } else {
-        throw new Error('Invalid data structure.');
+      if (
+        !parsedData ||
+        !Array.isArray(parsedData.invoices) ||
+        !parsedData.settings ||
+        typeof parsedData.settings.defaultRate !== 'number' ||
+        typeof parsedData.settings.currency !== 'string'
+      ) {
+        throw new Error('Invalid Invoicr backup.');
       }
+
+      const nextInvoices = normalizeInvoices(parsedData.invoices);
+      const nextSettings: AppSettings = {
+        defaultRate: parsedData.settings.defaultRate || DEFAULT_HOURLY_RATE,
+        currency: parsedData.settings.currency || DEFAULT_CURRENCY,
+        userName: parsedData.settings.userName || '',
+        userBankAccount: parsedData.settings.userBankAccount || '',
+      };
+
+      setInvoices(nextInvoices);
+      setSettings(nextSettings);
+      saveData(LOCAL_STORAGE_KEYS.INVOICES, nextInvoices);
+      saveData(LOCAL_STORAGE_KEYS.SETTINGS, nextSettings);
+      setActiveView('dashboard');
+      addToast('Backup imported.', 'success');
     } catch (error) {
-      console.error('Failed to import data:', error);
-      addToast(`Error importing data: ${error instanceof Error ? error.message : 'Invalid JSON file.'}`, 'error');
+      addToast(error instanceof Error ? error.message : 'Could not import backup.', 'error');
     }
   }, [addToast, saveData]);
-
 
   return (
     <AppContext.Provider value={{
       theme, toggleTheme,
-      invoices, addInvoice, updateInvoice, deleteInvoice, getInvoiceById,
+      invoices, addInvoice, updateInvoice, deleteInvoice, duplicateInvoice, setInvoiceStatus, getInvoiceById,
       settings, updateSettings,
       timer, startTimer, stopTimer, resetTimer, applyTrackedTimeToInvoice,
       toasts, addToast,
       activeView, setActiveView,
-      resetAllData,
-      exportAppData, importAppData,
+      resetAllData, exportAppData, importAppData,
     }}>
       {children}
     </AppContext.Provider>
@@ -267,8 +275,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
+  if (!context) throw new Error('useAppContext must be used within an AppProvider');
   return context;
 };
