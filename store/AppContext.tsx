@@ -140,11 +140,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const duplicateInvoice = useCallback((invoiceId: string) => {
     const source = invoices.find(inv => inv.id === invoiceId);
     if (!source) return;
+    const nextDueDate = new Date();
+    nextDueDate.setDate(nextDueDate.getDate() + 14);
     const duplicate: Invoice = {
       ...source,
       id: crypto.randomUUID(),
       projectName: `${source.projectName} Copy`,
       dateCreated: new Date().toISOString(),
+      dueDate: nextDueDate.toISOString().slice(0, 10),
       status: 'draft',
     };
     setInvoices(prev => [duplicate, ...prev]);
