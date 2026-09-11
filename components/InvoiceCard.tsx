@@ -54,7 +54,7 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onEdit, onDelete, on
         {invoice.clientEmail && <p className="mt-4 truncate text-xs text-slate-400">{invoice.clientEmail}</p>}
       </div>
 
-      <div className="flex items-center gap-1 border-t border-slate-100 bg-slate-50/70 p-2 dark:border-white/10 dark:bg-white/[0.02]">
+      <div className="flex flex-wrap items-center gap-1 border-t border-slate-100 bg-slate-50/70 p-2 dark:border-white/10 dark:bg-white/[0.02]">
         <button onClick={() => onEdit(invoice)} className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-white hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">Edit</button>
         <button onClick={() => onExport(invoice)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-white hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">
           <DownloadIcon className="h-3.5 w-3.5" /> PDF
