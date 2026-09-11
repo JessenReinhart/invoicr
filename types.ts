@@ -1,21 +1,25 @@
-
 export type Theme = 'light' | 'dark';
+
+export type InvoiceStatus = 'draft' | 'sent' | 'paid';
 
 export interface Invoice {
   id: string;
   projectName: string;
   clientName?: string;
+  clientEmail?: string;
   hours: number;
   rate: number;
   dateCreated: string;
+  dueDate?: string;
+  status?: InvoiceStatus;
   notes?: string;
 }
 
 export interface AppSettings {
   defaultRate: number;
   currency: string;
-  userName?: string; // Added for user's name
-  userBankAccount?: string; // Added for user's bank account details
+  userName?: string;
+  userBankAccount?: string;
 }
 
 export interface TimerState {
@@ -30,17 +34,15 @@ export interface ToastMessage {
   type: 'success' | 'error' | 'info' | 'warning';
 }
 
-export type ActiveView = 'dashboard' | 'settings';
+export type ActiveView = 'dashboard' | 'invoices' | 'timer' | 'settings';
 
-// Structure for exporting/importing all app data
 export interface AppDataDump {
   invoices: Invoice[];
   settings: AppSettings;
 }
 
-// html2pdf.js is loaded via CDN, declare its type for TypeScript
 declare global {
   interface Window {
-    html2pdf: any; // Simplified type for html2pdf
+    html2pdf: any;
   }
 }

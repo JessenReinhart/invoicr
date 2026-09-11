@@ -7,30 +7,30 @@
   <title>Invoicr</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="/icons/logo.png">
-  <meta name="theme-color" content="#8b5cf6">
+  <meta name="theme-color" content="#0a0a0a">
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class', // or 'media'
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            black: '#000000', // True black for Vercel-like dark mode
+            black: '#000000',
           },
           fontFamily: {
-            sans: ['Quicksand', 'sans-serif'], // Changed to Quicksand
+            sans: ['Manrope', 'sans-serif'],
           },
-          boxShadow: { // Softer, Vercel-like glows
-            'glow-pink-purple': '0 0 12px 0px rgba(236, 72, 153, 0.2), 0 0 6px 0px rgba(168, 85, 247, 0.15)',
-            'glow-blue-purple': '0 0 12px 0px rgba(59, 130, 246, 0.2), 0 0 6px 0px rgba(168, 85, 247, 0.15)',
-            'dark-glow-pink-purple': '0 0 15px 0px rgba(236, 72, 153, 0.25), 0 0 8px 0px rgba(168, 85, 247, 0.2)',
-            'dark-glow-blue-purple': '0 0 15px 0px rgba(59, 130, 246, 0.25), 0 0 8px 0px rgba(168, 85, 247, 0.2)',
+          boxShadow: {
+            'glow-pink-purple': '0 18px 48px rgba(15, 23, 42, 0.08)',
+            'glow-blue-purple': '0 18px 48px rgba(15, 23, 42, 0.08)',
+            'dark-glow-pink-purple': '0 18px 48px rgba(0, 0, 0, 0.38)',
+            'dark-glow-blue-purple': '0 18px 48px rgba(0, 0, 0, 0.38)',
           },
-          borderRadius: { // Vercel uses slightly sharper rounded corners
-            'md': '0.375rem', // Default Tailwind md (6px)
-            'lg': '0.5rem',   // Default Tailwind lg (8px)
+          borderRadius: {
+            'md': '0.75rem',
+            'lg': '1rem',
           }
         }
       }
@@ -38,29 +38,52 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Updated Google Fonts link for Quicksand -->
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* For Quicksand font */
+    :root {
+      color-scheme: light;
+    }
+
+    .dark {
+      color-scheme: dark;
+    }
+
     body {
-      font-family: 'Quicksand', sans-serif;
+      font-family: 'Manrope', sans-serif;
+      background-image:
+        radial-gradient(circle at 20% -10%, rgba(239, 68, 68, 0.07), transparent 30%),
+        radial-gradient(circle at 90% 0%, rgba(251, 146, 60, 0.05), transparent 25%);
+      background-attachment: fixed;
+    }
+
+    .dark body {
+      background-image:
+        radial-gradient(circle at 20% -10%, rgba(239, 68, 68, 0.10), transparent 26%),
+        radial-gradient(circle at 85% 0%, rgba(249, 115, 22, 0.05), transparent 22%);
     }
 
     .rainbow-border-card {
       padding: 1px;
-      /* Thickness of the border */
-      background: linear-gradient(to bottom right, #ec4899, #8b5cf6, #3b82f6);
-      border-radius: 0.5rem;
-      /* Corresponds to Tailwind's rounded-lg (8px) */
+      background: linear-gradient(145deg, rgba(226, 232, 240, 0.95), rgba(248, 250, 252, 0.35));
+      border-radius: 1rem;
+    }
+
+    .dark .rainbow-border-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.035));
     }
 
     .rainbow-border-card-inner {
-      border-radius: calc(0.5rem - 1px);
-      /* Slightly less than outer to make border visible (7px) */
+      border-radius: calc(1rem - 1px);
     }
 
-    /* Scrollbar styling - Vercel like */
+    .bg-gradient-to-r.from-pink-500.via-purple-600.to-blue-500 {
+      background-image: linear-gradient(to right, #ef4444, #f97316, #fb7185) !important;
+    }
+
+    ::selection {
+      background: rgba(239, 68, 68, 0.18);
+    }
+
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -68,32 +91,23 @@
 
     ::-webkit-scrollbar-track {
       background: transparent;
-      /* Track is transparent */
-    }
-
-    .dark ::-webkit-scrollbar-track {
-      background: transparent;
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #4b5563;
-      /* gray-600 */
-      border-radius: 3px;
+      background: #cbd5e1;
+      border-radius: 999px;
     }
 
     .dark ::-webkit-scrollbar-thumb {
-      background: #6b7280;
-      /* gray-500 */
+      background: #3f3f46;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: #374151;
-      /* gray-700 */
+      background: #94a3b8;
     }
 
     .dark ::-webkit-scrollbar-thumb:hover {
-      background: #9ca3af;
-      /* gray-400 */
+      background: #52525b;
     }
   </style>
   <script type="importmap">
@@ -109,7 +123,7 @@
   <link rel="stylesheet" href="/index.css">
 </head>
 
-<body class="bg-white dark:bg-black text-slate-900 dark:text-slate-50 antialiased transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-50 antialiased transition-colors duration-300">
   <div id="root"></div>
   <div id="toast-container-root" class="fixed top-4 right-4 z-[9999]"></div>
   <script type="module" src="/index.tsx"></script>

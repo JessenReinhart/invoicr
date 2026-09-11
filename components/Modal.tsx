@@ -13,16 +13,16 @@ interface ModalProps {
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
+      if (event.key === 'Escape') onClose();
     };
+
     if (isOpen) {
       document.addEventListener('keydown', handleEsc);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
+
     return () => {
       document.removeEventListener('keydown', handleEsc);
       document.body.style.overflow = 'auto';
@@ -39,30 +39,31 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
   };
 
   return (
-    <div 
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
-        onClick={onClose}
-        aria-labelledby="modal-title"
-        role="dialog"
-        aria-modal="true"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-md"
+      onClick={onClose}
+      aria-labelledby="modal-title"
+      role="dialog"
+      aria-modal="true"
     >
-      <div 
-        className={`relative bg-white dark:bg-slate-900 rounded-lg shadow-xl ${sizeClasses[size]} w-full overflow-hidden flex flex-col max-h-[90vh]`}
+      <div
+        className={`relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-white/60 bg-white/95 shadow-[0_30px_80px_rgba(15,23,42,0.28)] ${sizeClasses[size]} dark:border-white/10 dark:bg-[#0d0d0f]/95`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800">
-          <h3 id="modal-title" className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-white/10">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-500">Invoicr</p>
+            <h3 id="modal-title" className="mt-0.5 text-lg font-bold tracking-tight text-slate-950 dark:text-white">{title}</h3>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="grid h-9 w-9 place-items-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white"
             aria-label="Close modal"
           >
-            <XIcon className="w-5 h-5" />
+            <XIcon className="h-4 w-4" />
           </button>
         </div>
-        <div className="p-4 sm:p-5 overflow-y-auto">
-          {children}
-        </div>
+        <div className="overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   );
